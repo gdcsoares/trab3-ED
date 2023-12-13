@@ -45,7 +45,7 @@ Node * binary_tree_max(Node * node){
     return node;
 }
 
-Node * binary_tree_remove(BinaryTree * bt, void * key,int (*comp)(void*, void *)){
+void binary_tree_remove(BinaryTree * bt, void * key,int (*comp)(void*, void *)){
     Node * node = binary_tree_search(bt,key,comp);
     if(node->left_son == NULL){
         transplant(bt, node, node->right_son);
@@ -66,8 +66,6 @@ Node * binary_tree_remove(BinaryTree * bt, void * key,int (*comp)(void*, void *)
         Node * l_parent = find_parent(bt->root,successor->left_son);
         l_parent = successor;
     }
-
-    return node;
 }
 
 void transplant(BinaryTree *bt, Node * node, Node * son){

@@ -2,11 +2,11 @@
 #define INDEX_H
 
 #include "hash.h"
+#include "vector.h"
 
-char ** build_files_names()
-char * read_file(char * name);
-int count_files(c)
-HashTable * index_build(char ** files,HashFunction hash_fn, CmpFunction cmp_fn, void (*val_destroy)(void*))
+Vector * build_files_names(char * diretorio);
+char * read_file(void * name);
+HashTable * index_build(Vector* files,HashFunction hash_fn, CmpFunction cmp_fn, void (*val_destroy)(void*))
 void index_save(HashTable * index);
 
 

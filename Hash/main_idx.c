@@ -32,7 +32,10 @@ int compare_keys(void * key1_void, void * key2_void){
 
 int main(){
 
-    char ** files = build_files_names();
+    char * diretorio;
+    scanf("%s",diretorio)
+
+    Vector * files = build_files_names(diretorio);
     HashTable * idx = index_build(files,hash_string,compare_keys,val_destroy);
     index_save(idx);
     

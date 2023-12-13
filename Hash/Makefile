@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-lm 
-DEPS= main_idx.h hash.h forward_list.h node.h
-OBJ=main_idx.o hash.o forward_list.o node.o
+DEPS= main_idx.h index.h hash.h forward_list.h node.h vector.h
+OBJ=main_idx.o index.o hash.o forward_list.o node.o vector.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
