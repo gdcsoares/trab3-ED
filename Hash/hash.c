@@ -69,6 +69,10 @@ void hash_table_set(HashTable *h, void *key, void *val,void (*val_destroy)(void*
 void * hash_table_get(HashTable *h, void *key){
     int key_val = h->hash_fn(h, key);
 
+    if(h->buckets[key_val] == NULL){
+        return NULL;
+    }
+
     Node * node_it = h->buckets[key_val]->head;
 
     while(node_it!=NULL){

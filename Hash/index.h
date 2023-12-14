@@ -4,9 +4,9 @@
 #include "hash.h"
 #include "vector.h"
 
-Vector * build_files_names(char * diretorio);
-char * read_file(void * name);
-HashTable * index_build(Vector* files,HashFunction hash_fn, CmpFunction cmp_fn, void (*val_destroy)(void*))
+Vector * build_files(char * diretorio);
+Vector * read_file(void * name_file_void);
+HashTable * index_build(Vector* files,HashFunction hash_fn, CmpFunction cmp_fn, void (*val_destroy)(void*),void(*hash_destroy)(void*));
 void index_save(HashTable * index);
 
 
