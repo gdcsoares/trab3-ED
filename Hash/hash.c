@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "hash.h"
-#include "forward_list.h"
 
 
 struct HashTable
@@ -34,7 +33,7 @@ HashTableItem * _hash_pair_construct(void * key, void* value){
     return item;
 }
 
-void hash_table_set(HashTable *h, void *key, void *val,void (*val_destroy)(void*)){
+void hash_table_set(HashTable *h, void *key, void *val,void (*val_destroy)(void*),void (*key_destroy)(void*)){
     int key_val = h->hash_fn(h, key);
 
     if(h->buckets[key_val]==NULL){
@@ -66,6 +65,9 @@ void hash_table_set(HashTable *h, void *key, void *val,void (*val_destroy)(void*
 
 }
 
+ForwardList * hash_table_buckets(HashTable * h,int i){
+    return h->buckets[i];
+}
 void * hash_table_get(HashTable *h, void *key){
     int key_val = h->hash_fn(h, key);
 
@@ -89,8 +91,20 @@ void * hash_table_get(HashTable *h, void *key){
     return NULL;
 }
 
+void * _hash_pair_value(HashTableItem * item){
+    return item->val;
+}
+
+void * _hash_pair_key(HashTableItem * item){
+    return item->key;
+}
+
 int hash_table_size(HashTable *h){
     return h->table_size;
+}
+
+int hash_table_n_elements(HashTable *h){
+    return h->n_elements;
 }
 
 void hash_table_destroy(HashTable *h,void (*key_destroy)(void*),void (*val_destroy)(void*))

@@ -1,0 +1,17 @@
+4
+agua:
+2
+small/files/a1.txt 3
+small/files/a2.txt 1
+ceu:
+2
+small/files/a3.txt 3
+small/files/a2.txt 1
+azul:
+3
+small/files/a3.txt 2
+small/files/a1.txt 1
+small/files/a2.txt 1
+bola:
+1
+small/files/a2.txt 1

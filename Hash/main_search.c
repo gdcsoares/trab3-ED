@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "vector.h"
-#include "index.h"
+#include "search.h"
 #include "hash.h"
 
 void key_destroy(void * key){
@@ -38,12 +38,11 @@ int compare_keys(void * key1_void, void * key2_void){
 }
 
 int main(int argc, char * argv[]){
-
-    char * diretorio = argv[1];
-
-    Vector * files = build_files(diretorio);
-    HashTable * idx = index_build(files,hash_string,compare_keys,val_destroy,key_destroy,hash_destroy);
-    index_save(idx,"index.txt");
-    hash_table_destroy(idx,key_destroy,hash_destroy);
+    char * index_file = argv[1];
+    HashTable * hash = load_index(index_file,hash_string, compare_keys, val_destroy,key_destroy, hash_destroy);
+    char query[1000];
+    printf("Query: ");
+    scanf("%[^\n]", query);
+    Vector * recommendations = search_docs(hash,query,hash_string,compare_keys,val_destroy,key_destroy);
     return 0;
 }

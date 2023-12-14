@@ -37,6 +37,19 @@ void vector_push_back(Vector *v, void * val){
     v->size++;
 }
 
+int vector_find(Vector *v, void* val, int (*cmp)(void*, void*))
+{
+    int i = 0;
+    while (i < vector_size(v))
+    {
+        if (!cmp(vector_get(v, i), val))
+            return i;
+        i++;
+    }
+
+    return -1;
+}
+
 int vector_size(Vector *v){
     return v->size;
 }
@@ -125,4 +138,15 @@ void vector_reverse(Vector *v){
         vector_swap(v, i, back);
         back--;
     }
+}
+
+Vector *vector_unique(Vector *v, int (*cmp)(void*, void*))
+{
+    Vector *output = vector_construct();
+
+    for (int i = 0; i < vector_size(v); i++)
+        if (vector_find(output, vector_get(v, i), cmp) == -1)
+            vector_push_back(output, v->data[i]);
+
+    return output;
 }

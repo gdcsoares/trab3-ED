@@ -11,6 +11,8 @@ void vector_push_back(Vector *v, void * val);
 
 int vector_size(Vector *v); 
 
+int vector_find(Vector *v, void* val, int (*cmp)(void*, void*));
+
 void printVoidPtrVector(Vector * v);
 
 void * vector_get(Vector *v, int i); 
@@ -34,5 +36,8 @@ void vector_reverse(Vector *v);
 Vector *vector_copy(Vector *v); 
 
 void vector_clear(Vector *v);
+
+Vector *vector_unique(Vector *v, int (*cmp)(void*, void*));
+
 
 #endif
