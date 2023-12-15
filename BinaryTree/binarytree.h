@@ -14,6 +14,7 @@ void binary_tree_print(BinaryTree *bt);
 Node * binary_tree_min(Node * node);
 Node * binary_tree_max(Node * node);
 void binary_tree_destroy(BinaryTree * bt,void (*key_destroy)(void*),void (*val_destroy)(void*));
+void binary_tree_clear(BinaryTree * bt);
 
 
 

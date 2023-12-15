@@ -53,12 +53,23 @@ void node_destroy_recursive(Node * node,void (*key_destroy)(void*),void (*val_de
         node_destroy_recursive(node->left_son,key_destroy,val_destroy);
         node_destroy_recursive(node->right_son,key_destroy,val_destroy);
 
-        if(node->value!=NULL){
+        if(val_destroy!=NULL){
             val_destroy(node->value);
         }
-        if(node->key!=NULL){
+        if(key_destroy!=NULL){
             key_destroy(node->key);
         }
+
+        if(node!=NULL){
+            free(node);
+        }
+    }
+}
+
+void node_clear_recursive(Node * node){
+    if(node!=NULL){
+        node_clear_recursive(node->left_son);
+        node_clear_recursive(node->right_son);
 
         if(node!=NULL){
             free(node);

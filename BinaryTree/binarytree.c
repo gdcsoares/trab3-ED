@@ -99,3 +99,10 @@ void binary_tree_destroy(BinaryTree * bt,void (*key_destroy)(void*),void (*val_d
         free(bt);
     }
 }
+
+void binary_tree_clear(BinaryTree * bt){
+    node_clear_recursive(bt->root);
+    if(bt!=NULL){
+        free(bt);
+    }
+}

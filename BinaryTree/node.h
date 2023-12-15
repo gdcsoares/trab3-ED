@@ -12,6 +12,7 @@ Node * node_construct(void * key, void * value, Node * left, Node * right);
 Node * add_recursive(Node *node, void * key, void * value,int (*comp)(void*, void *));
 Node * find_parent(Node * root,Node * node);
 void node_destroy_recursive(Node * node,void (*key_destroy)(void*),void (*val_destroy)(void*));
+void node_clear_recursive(Node * node);
 void node_print(Node *node);
 
 #endif
