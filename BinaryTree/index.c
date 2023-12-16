@@ -13,7 +13,7 @@ double get_timestamp()
 
 Vector * build_files(char * diretorio){
     char path[100];
-    snprintf(path,sizeof(path),"%s/files.txt",diretorio);
+    sprintf(path,"%s/files.txt",diretorio);
     FILE * file;
     file = fopen(path,"r");
 
@@ -29,10 +29,9 @@ Vector * build_files(char * diretorio){
             }
         } 
     char line_path[150];
-    snprintf(line_path,sizeof(line_path), "%s/%s", diretorio, line);
+    sprintf(line_path, "%s/%s", diretorio, line);
 
     vector_push_back(files_paths, strdup(line_path));
-    printf("lida\n");
     }
     fclose(file);
 
@@ -78,18 +77,11 @@ BinaryTree * index_build(Vector* files, int(*cmp)(void*,void*),void (*val_destro
         for(int a = 0; a < vector_size(words);a++){
 
             char * word = vector_get(words,a);
-
-            if(hash_table_get(index,word)!=NULL){
+            if(binary_tree_search(index,word,cmp)!=NULL){
                 BinaryTree * collection = (BinaryTree*)binary_tree_search(index,word,cmp); 
                 if(binary_tree_search(collection,file,cmp)!=NULL){ 
                     int * freq_pointer = (int*)binary_tree_search(collection,file,cmp);
-                    int freq = *freq_pointer;
-                    freq++;
-            
-                    void *ponteiroVoid = malloc(sizeof(int));
-                    memcpy(ponteiroVoid, &freq, sizeof(int));
-
-                    binary_tree_add(collection,file,ponteiroVoid,cmp);
+                    *freq_pointer = *freq_pointer+1;
                 }
                 else{
                     int freq = 1;
@@ -97,7 +89,7 @@ BinaryTree * index_build(Vector* files, int(*cmp)(void*,void*),void (*val_destro
                     void *ponteiroVoid = malloc(sizeof(int));
                     memcpy(ponteiroVoid, &freq, sizeof(int));
 
-                    binary_tree_add(collection,file,ponteiroVoid,cmp);
+                    binary_tree_add(collection,file,ponteiroVoid,cmp,val_destroy,key_destroy);
                 }
             }
 
@@ -108,8 +100,8 @@ BinaryTree * index_build(Vector* files, int(*cmp)(void*,void*),void (*val_destro
                 memcpy(ponteiroVoid, &freq, sizeof(int));
 
                 BinaryTree * collection = binary_tree_construct();
-                binary_tree_add(collection,file,ponteiroVoid,cmp);
-                binary_tree_add(index,word,collection,cmp);
+                binary_tree_add(collection,file,ponteiroVoid,cmp,val_destroy,key_destroy);
+                binary_tree_add(index,word,collection,cmp,bt_destroy,key_destroy);
             }
         }
         vector_destroy(words);
@@ -124,35 +116,10 @@ BinaryTree * index_build(Vector* files, int(*cmp)(void*,void*),void (*val_destro
     return index;
 }
 
-void index_save(HashTable * index,char * output){
+void index_save(BinaryTree * index,char * output,void (*print)(void*,FILE*)){
     FILE * idx = fopen(output,"w");
-
-    int n_words = hash_table_n_elements(index);
-
-    fprintf(idx,"%d\n",n_words);
-
-    for(int i = 0; i < hash_table_size(index); i++){
-        ForwardList * words = hash_table_buckets(index,i);
-
-        if(words!=NULL){
-            HashTableItem * word = words->head->value;
-            fprintf(idx,"%s\n",(char*)_hash_pair_key(word));
-
-            HashTable * collection = (HashTable*)_hash_pair_value(word);
-            fprintf(idx,"%d\n",hash_table_n_elements(collection));
-            for(int a = 0; a <hash_table_size(collection);a++){
-                ForwardList * files = hash_table_buckets(collection,a);
-
-                if(files!=NULL){
-                    HashTableItem * file = files->head->value;
-                    int * freq_pointer = (int*)_hash_pair_value(file);
-                    int freq = *freq_pointer;
-                    fprintf(idx,"%s %d\n",(char*)_hash_pair_key(file),*freq_pointer);
-                }
-            }
-
-        }
-    }
+    fprintf(idx,"%d\n",binary_tree_size(index));
+    binary_tree_print(index,idx,print);
 
     fclose(idx);
 }

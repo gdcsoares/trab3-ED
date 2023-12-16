@@ -21,6 +21,7 @@ Recommendation * recommendation_construct(void * key, void * freq){
     return r;
 }
 
+
 int recommendation_sort(void * r1_void, void * r2_void){
     Recommendation * r1 = (Recommendation*)r1_void;
     Recommendation * r2 = (Recommendation*)r2_void;
@@ -28,13 +29,13 @@ int recommendation_sort(void * r1_void, void * r2_void){
     return r1->freq-r2->freq;
 }
 
-BinaryTree * load_index(char * index_file,HashFunction hash_fn, CmpFunction cmp_fn, void (*val_destroy)(void*),void (*key_destroy)(void*),void(*hash_destroy)(void*)){
+BinaryTree * load_index(char * index_file, int(*cmp)(void*,void*), void (*val_destroy)(void*),void (*key_destroy)(void*),void(*bt_destroy)(void*)){
     FILE * index = fopen(index_file,"r");
 
     int n_words;
     fscanf(index,"%d",&n_words);
 
-    HashTable * hash = hash_table_construct(9293,hash_fn,cmp_fn);
+    BinaryTree* bt = binary_tree_construct();
 
     for(int i=0; i < n_words ; i++){
         char * word = (char *)malloc(50);
@@ -43,24 +44,23 @@ BinaryTree * load_index(char * index_file,HashFunction hash_fn, CmpFunction cmp_
         int n_documents;
         fscanf(index,"%d",&n_documents);
 
-        HashTable * collection = hash_table_construct(733,hash_fn,cmp_fn);
+        BinaryTree * collection = binary_tree_construct();
         for(int a=0; a < n_documents; a++){
             char * file = (char *)malloc(100);
             int freq;
-            fscanf(index, "%s %d", file, &freq);
+            fscanf(index,"%s %d", file, &freq);
             void *ponteiroVoid = malloc(sizeof(int));
             memcpy(ponteiroVoid, &freq, sizeof(int));
-            hash_table_set(collection,file,ponteiroVoid,val_destroy,key_destroy);
+            binary_tree_add(collection,file,ponteiroVoid,cmp,val_destroy,key_destroy);
         }
-
-        hash_table_set(hash,word,collection,hash_destroy,key_destroy);
+        binary_tree_add(bt,word,collection,cmp,bt_destroy,key_destroy);
     }
 
     fclose(index);
-    return hash;
+    return bt;
 }
 
-Vector * search_docs(HashTable * hash,char * query,HashFunction hash_fn, CmpFunction cmp_fn,void (*val_destroy)(void*),void (*key_destroy)(void*),void (*hash_destroy)(void*)){
+Vector * search_docs(BinaryTree * bt,char * query, int(*cmp)(void*,void*),void (*val_destroy)(void*),void (*key_destroy)(void*),void (*bt_clear)(void*)){
     double start = get_timestamp(); 
 
     Vector *words = vector_construct();
@@ -74,37 +74,31 @@ Vector * search_docs(HashTable * hash,char * query,HashFunction hash_fn, CmpFunc
         word = strtok(NULL, " ");
     }
 
-    Vector *unique = vector_unique(words,cmp_fn);
+    Vector *unique = vector_unique(words,cmp);
 
-    HashTable *recommendations = hash_table_construct(9293, hash_fn, cmp_fn);
+    BinaryTree *recommendations = binary_tree_construct();
 
     for(int i=0 ; i <vector_size(unique) ; i++){
         char * word = vector_get(unique,i);
 
-        if(hash_table_get(hash,word)!=NULL){
+        if(binary_tree_search(bt,word,cmp)!=NULL){
+            BinaryTree * collection = (BinaryTree*)binary_tree_search(bt,word,cmp); 
 
-            HashTable * collection = (HashTable*)hash_table_get(hash,word);
-            
-            for(int a=0; a < hash_table_size(collection);a++){
-                ForwardList * files = hash_table_buckets(collection,a);
+            if(binary_tree_size(collection)>0){
 
-                if(files!=NULL){
-                    HashTableItem * item = files->head->value;
-                    char * file = _hash_pair_key(item);
+                for (int a = 0; a < binary_tree_size(collection); a++) {
+                    char * file = (char*)binary_tree_node_key(collection,a);
 
-                    if(hash_table_get(recommendations,file)!=NULL){
-                        int * freq_add = (int*)hash_table_get(recommendations,file);
-                        int * freq_old = _hash_pair_value(item);
-                        int freq_new = * freq_add + * freq_old;
-                        void *ponteiroVoid = malloc(sizeof(int));
-                        memcpy(ponteiroVoid, &freq_new, sizeof(int));
-                        hash_table_set(recommendations,file,ponteiroVoid,val_destroy,key_destroy);
+                    if(binary_tree_search(recommendations,file,cmp)!=NULL){
+                        int * freq = (int*)binary_tree_search(recommendations,file,cmp); 
+                        int * freq_add = (int*)binary_tree_node_value(collection,a);
+                        *freq = *freq + *freq_add;
                     }
                     else{
-                        int * freq = _hash_pair_value(item);
-                        hash_table_set(recommendations,file,freq,val_destroy,key_destroy);        
+                        int * freq = (int*)binary_tree_node_value(collection,a);
+                        binary_tree_add(recommendations,file,freq,cmp,val_destroy,key_destroy); 
                     }
-                    
+                     
                 }
             }
         }
@@ -115,7 +109,7 @@ Vector * search_docs(HashTable * hash,char * query,HashFunction hash_fn, CmpFunc
     Vector * pairs = convert_in_pairs(recommendations);
     vector_sort(pairs,recommendation_sort);
 
-    hash_table_clear(hash);
+    binary_tree_destroy(bt,NULL,bt_clear);
     double end = get_timestamp(); 
     double dt = (end - start);
     printf("Tempo para buscar palavras : %f\n", dt);
@@ -123,24 +117,23 @@ Vector * search_docs(HashTable * hash,char * query,HashFunction hash_fn, CmpFunc
     return pairs;
 }
 
-Vector * convert_in_pairs(HashTable * hash){
+Vector * convert_in_pairs(BinaryTree * bt){
     Vector * pairs = vector_construct();
 
-    for(int i=0; i < hash_table_size(hash); i++){
-        ForwardList * files = hash_table_buckets(hash,i);
+    for(int i=0; i < binary_tree_size(bt); i++){
+        void * doc = binary_tree_node_key(bt,i);
+        void * freq = binary_tree_node_value(bt,i);
 
-        if(files!=NULL){
-            HashTableItem * item = files->head->value;
-            Recommendation * r = recommendation_construct(_hash_pair_key(item),_hash_pair_value(item));
-            vector_push_back(pairs,r);
-        }
+        Recommendation * r = recommendation_construct(doc,freq);
+        vector_push_back(pairs,r);
 
     }
 
-    hash_table_clear(hash);
+    binary_tree_clear(bt);
 
     return pairs;
 }
+
 
 void print_recommendations(Vector * rec){
     for(int i=0; i < 10;i++){

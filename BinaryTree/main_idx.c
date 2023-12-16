@@ -26,13 +26,28 @@ int compare_keys(void * key1_void, void * key2_void){
     return strcmp(string1,string2);
 }
 
+void print_collection(void * node_void,FILE * file){
+    Node * node = (Node*)node_void;
+    int * freq_pointer = (int*)node->value;
+    int freq = *freq_pointer;
+    fprintf(file,"%s %d\n",(char*)node->key,freq);
+}
+
+void print_index(void * node_void,FILE * file){
+    Node * node = (Node*)node_void;
+    fprintf(file,"%s\n",(char*)node->key);
+    fprintf(file,"%d\n",binary_tree_size(node->value));
+    binary_tree_print(node->value,file,print_collection);
+}
+
+
 int main(int argc, char * argv[]){
 
     char * diretorio = argv[1];
 
     Vector * files = build_files(diretorio);
-    BinaryTree * idx = index_build(files,hash_string,compare_keys,val_destroy,key_destroy,hash_destroy);
-    index_save(idx,"index.txt");
+    BinaryTree * idx = index_build(files,compare_keys,val_destroy,key_destroy,bt_destroy);
+    index_save(idx,"index.txt",print_index);
     binary_tree_destroy(idx,key_destroy,bt_destroy);
     return 0;
 }

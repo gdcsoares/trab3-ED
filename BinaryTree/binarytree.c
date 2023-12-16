@@ -11,8 +11,8 @@ BinaryTree * binary_tree_construct(){
     return (BinaryTree*)calloc(1,sizeof(BinaryTree));
 }
 
-void binary_tree_add(BinaryTree *bt, void *key, void * value,int (*comp)(void*, void *)) {
-    bt->root = add_recursive(bt->root, key, value, comp);
+void binary_tree_add(BinaryTree *bt, void *key, void * value,int (*comp)(void*, void *),void (*val_destroy)(void*),void (*key_destroy)(void*)) {
+    bt->root = add_recursive(bt->root, key, value, comp,val_destroy,key_destroy);
     bt->size++;
 }
 
@@ -25,6 +25,9 @@ void * binary_tree_search(BinaryTree * bt, void * key,int (*comp)(void*, void *)
         else{
             node=node->right_son;
         }
+    }
+    if(node == NULL){
+        return NULL;
     }
     return node->value;
 }
@@ -46,7 +49,7 @@ Node * binary_tree_max(Node * node){
 }
 
 void binary_tree_remove(BinaryTree * bt, void * key,int (*comp)(void*, void *)){
-    Node * node = binary_tree_search(bt,key,comp);
+    Node * node = node_search(bt->root,key,comp);
     if(node->left_son == NULL){
         transplant(bt, node, node->right_son);
     }
@@ -87,10 +90,8 @@ void transplant(BinaryTree *bt, Node * node, Node * son){
     }
 }
 
-void binary_tree_print(BinaryTree *bt) {
-    printf("Tree: ");
-    node_print(bt->root);
-    printf("\n");
+void binary_tree_print(BinaryTree *bt,FILE * file,void (*print)(void*,FILE*)){;
+    node_print(bt->root,file,print);
 }
 
 void binary_tree_destroy(BinaryTree * bt,void (*key_destroy)(void*),void (*val_destroy)(void*)){
@@ -105,4 +106,20 @@ void binary_tree_clear(BinaryTree * bt){
     if(bt!=NULL){
         free(bt);
     }
+}
+
+int binary_tree_size(BinaryTree * bt){
+    return bt->size;
+}
+
+void * binary_tree_node_value(BinaryTree * bt,int i){
+    return node_in_order_value(bt->root,i);
+}
+
+void * binary_tree_node_key(BinaryTree * bt,int i){
+    return node_in_order_key(bt->root,i);
+}
+
+Node * binary_tree_root(BinaryTree * bt){
+    return bt->root;
 }

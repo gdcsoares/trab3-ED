@@ -10,9 +10,9 @@ typedef struct
     int freq;
 }Recommendation;
 
-BinaryTree * load_index(char * index_file,HashFunction hash_fn, CmpFunction cmp_fn, void (*val_destroy)(void*),void (*key_destroy)(void*),void(*hash_destroy)(void*));
-Vector * search_docs(HashTable * hash,char * query,HashFunction hash_fn, CmpFunction cmp_fn,void (*val_destroy)(void*),void (*key_destroy)(void*),void (*hash_destroy)(void*));
-Vector * convert_in_pairs(HashTable * hash);
+BinaryTree * load_index(char * index_file, int(*cmp)(void*,void*), void (*val_destroy)(void*),void (*key_destroy)(void*),void(*bt_destroy)(void*));
+Vector * search_docs(BinaryTree * bt,char * query,int(*cmp)(void*,void*),void (*val_destroy)(void*),void (*key_destroy)(void*),void (*bt_clear)(void*));
+Vector * convert_in_pairs(BinaryTree * bt);
 void print_recommendations(Vector * rec);
 Recommendation * recommendation_construct(void * key, void * freq);
 int recommendation_sort(void * r1_void, void * r2_void);
