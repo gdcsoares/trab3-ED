@@ -54,7 +54,7 @@ int main(int argc, char * argv[]){
     char query[1000];
     printf("Query: ");
     scanf("%[^\n]", query);
-    Vector * recommendations = search_docs(bt,query,compare_keys,val_destroy,key_destroy,bt_clear);
+    Vector * recommendations = search_docs(bt,query,compare_keys,val_destroy,key_destroy,bt_destroy);
     print_recommendations(recommendations);
     for(int i=0 ; i < vector_size(recommendations);i++){
         recommendation_destroy(vector_get(recommendations,i));

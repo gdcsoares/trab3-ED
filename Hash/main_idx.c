@@ -6,7 +6,7 @@
 #include "hash.h"
 
 void key_destroy(void * key){
-   
+    free(key);
 }
 
 void val_destroy(void * val){
@@ -16,6 +16,11 @@ void val_destroy(void * val){
 void hash_destroy(void * hash_void){
     HashTable * hash = (HashTable*)hash_void;
     hash_table_destroy(hash,key_destroy,val_destroy);
+}
+
+void hash_clear(void * hash_void){
+    HashTable * hash = (HashTable*)hash_void;
+    hash_table_clear(hash);
 }
 
 int hash_string(HashTable * h, void * void_string){

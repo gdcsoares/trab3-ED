@@ -60,7 +60,7 @@ BinaryTree * load_index(char * index_file, int(*cmp)(void*,void*), void (*val_de
     return bt;
 }
 
-Vector * search_docs(BinaryTree * bt,char * query, int(*cmp)(void*,void*),void (*val_destroy)(void*),void (*key_destroy)(void*),void (*bt_clear)(void*)){
+Vector * search_docs(BinaryTree * bt,char * query, int(*cmp)(void*,void*),void (*val_destroy)(void*),void (*key_destroy)(void*),void (*bt_destroy)(void*)){
     double start = get_timestamp(); 
 
     Vector *words = vector_construct();
@@ -96,12 +96,16 @@ Vector * search_docs(BinaryTree * bt,char * query, int(*cmp)(void*,void*),void (
                     }
                     else{
                         int * freq = (int*)binary_tree_node_value(collection,a);
-                        binary_tree_add(recommendations,file,freq,cmp,val_destroy,key_destroy); 
+                        int freq_new;
+                        void *ponteiroVoid = malloc(sizeof(int));
+                        memcpy(ponteiroVoid, &freq, sizeof(int));
+                        binary_tree_add(recommendations,strdup(file),ponteiroVoid,cmp,val_destroy,key_destroy); 
                     }
                      
                 }
             }
         }
+        free(word);
     }
 
     vector_destroy(words);
@@ -109,7 +113,7 @@ Vector * search_docs(BinaryTree * bt,char * query, int(*cmp)(void*,void*),void (
     Vector * pairs = convert_in_pairs(recommendations);
     vector_sort(pairs,recommendation_sort);
 
-    binary_tree_destroy(bt,NULL,bt_clear);
+    binary_tree_destroy(bt,key_destroy,bt_destroy);
     double end = get_timestamp(); 
     double dt = (end - start);
     printf("Tempo para buscar palavras : %f\n", dt);

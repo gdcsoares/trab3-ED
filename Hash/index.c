@@ -71,51 +71,45 @@ HashTable * index_build(Vector* files,HashFunction hash_fn, CmpFunction cmp_fn, 
     double start = get_timestamp(); 
 
     HashTable * index = hash_table_construct(9293,hash_fn,cmp_fn);
-
+    int n = 0;
     for(int i = 0; i < vector_size(files); i++){
         char * file = vector_get(files,i);
         Vector * words = read_file(vector_get(files,i));
-        
+
         for(int a = 0; a < vector_size(words);a++){
 
             char * word = vector_get(words,a);
 
-            if(hash_table_get(index,word)!=NULL){
-                HashTable * collection = (HashTable*)hash_table_get(index,word); 
-                if(hash_table_get(collection,file)!=NULL){ 
-                    int * freq_pointer = (int*)hash_table_get(collection,file);
-                    int freq = *freq_pointer;
-                    freq++;
-            
-                    void *ponteiroVoid = malloc(sizeof(int));
-                    memcpy(ponteiroVoid, &freq, sizeof(int));
-
-                    hash_table_set(collection,file,ponteiroVoid,val_destroy,key_destroy);
-                }
-                else{
-                    int freq = 1;
-
-                    void *ponteiroVoid = malloc(sizeof(int));
-                    memcpy(ponteiroVoid, &freq, sizeof(int));
-
-                    hash_table_set(collection,file,ponteiroVoid,val_destroy,key_destroy);
-                }
+            if(hash_table_get(index,word)==NULL){
+                HashTable * collection = hash_table_construct(733,hash_fn,cmp_fn);
+                hash_table_set(index,strdup(word),collection,hash_destroy,key_destroy);
             }
 
+            HashTable * collection = (HashTable*)hash_table_get(index,word); 
+            
+            if(hash_table_get(collection,file)!=NULL){ 
+                int * freq_pointer = (int*)hash_table_get(collection,file);
+                *freq_pointer = *freq_pointer+1;
+            }
             else{
                 int freq = 1;
 
                 void *ponteiroVoid = malloc(sizeof(int));
                 memcpy(ponteiroVoid, &freq, sizeof(int));
-
-                HashTable * collection = hash_table_construct(733,hash_fn,cmp_fn);
-                hash_table_set(collection,file,ponteiroVoid,val_destroy,key_destroy);
-                hash_table_set(index,word,collection,hash_destroy,key_destroy);
+                hash_table_set(collection,strdup(file),ponteiroVoid,val_destroy,key_destroy);
             }
+
+            
+        }
+        for(int i = 0; i < vector_size(words); i++){
+            free(vector_get(words,i));
         }
         vector_destroy(words);
     }
 
+    for(int i = 0; i < vector_size(files); i++){
+        free(vector_get(files,i));
+    }
     vector_destroy(files);
 
     double end = get_timestamp(); 
@@ -134,10 +128,14 @@ void index_save(HashTable * index,char * output){
 
     for(int i = 0; i < hash_table_size(index); i++){
         ForwardList * words = hash_table_buckets(index,i);
-
+    
         if(words!=NULL){
-            HashTableItem * word = words->head->value;
-            fprintf(idx,"%s:\n",(char*)_hash_pair_key(word));
+            Node * node_it = words->head;
+
+            while(node_it!=NULL){
+            
+            HashTableItem * word = (HashTableItem*)node_it->value;
+            fprintf(idx,"%s\n",(char*)_hash_pair_key(word));
 
             HashTable * collection = (HashTable*)_hash_pair_value(word);
             fprintf(idx,"%d\n",hash_table_n_elements(collection));
@@ -150,6 +148,10 @@ void index_save(HashTable * index,char * output){
                     int freq = *freq_pointer;
                     fprintf(idx,"%s %d\n",(char*)_hash_pair_key(file),*freq_pointer);
                 }
+            }
+
+            node_it=node_it->next;
+
             }
 
         }

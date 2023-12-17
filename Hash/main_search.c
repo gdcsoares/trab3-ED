@@ -6,16 +6,21 @@
 #include "hash.h"
 
 void key_destroy(void * key){
-   
+   free(key);
 }
 
 void val_destroy(void * val){
-    free(val);
+  free(val);
 }
 
 void hash_destroy(void * hash_void){
     HashTable * hash = (HashTable*)hash_void;
     hash_table_destroy(hash,key_destroy,val_destroy);
+}
+
+void hash_clear(void * hash_void){
+    HashTable * hash = (HashTable*)hash_void;
+    hash_table_clear(hash);
 }
 
 int hash_string(HashTable * h, void * void_string){
@@ -43,6 +48,11 @@ int main(int argc, char * argv[]){
     char query[1000];
     printf("Query: ");
     scanf("%[^\n]", query);
-    Vector * recommendations = search_docs(hash,query,hash_string,compare_keys,val_destroy,key_destroy);
+    Vector * recommendations = search_docs(hash,query,hash_string,compare_keys,val_destroy,key_destroy,hash_destroy);
+    print_recommendations(recommendations);
+    for(int i=0 ; i < vector_size(recommendations);i++){
+        recommendation_destroy(vector_get(recommendations,i));
+    }
+    vector_destroy(recommendations);
     return 0;
 }

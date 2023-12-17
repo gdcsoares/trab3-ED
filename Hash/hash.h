@@ -25,6 +25,8 @@ void * _hash_pair_value(HashTableItem * item);
 void * _hash_pair_key(HashTableItem * item);
 ForwardList * hash_table_buckets(HashTable * h,int i);
 void hash_table_destroy(HashTable *h,void (*key_destroy)(void*),void (*val_destroy)(void*));
+void hash_table_clear(HashTable * h);
 void _hash_pair_destroy(HashTableItem * item,void (*key_destroy)(void*),void (*val_destroy)(void*));
+void _hash_pair_clear(HashTableItem * item);
 
 #endif

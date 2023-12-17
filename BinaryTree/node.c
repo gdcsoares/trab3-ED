@@ -24,8 +24,10 @@ Node * add_recursive(Node *node, void * key, void * value,int (*comp)(void*, voi
         node->right_son = add_recursive(node->right_son, key, value,comp,val_destroy,key_destroy);
     }
     else{
+        key_destroy(node->key);
         val_destroy(node->value);
         node->value = value;
+        node->key = key;
     }
 
     return node;

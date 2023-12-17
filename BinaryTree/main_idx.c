@@ -6,7 +6,7 @@
 #include "binarytree.h"
 
 void key_destroy(void * key){
-   
+   free(key);
 }
 
 void val_destroy(void * val){

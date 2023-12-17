@@ -38,29 +38,39 @@ void hash_table_set(HashTable *h, void *key, void *val,void (*val_destroy)(void*
 
     if(h->buckets[key_val]==NULL){
         h->buckets[key_val]=forward_list_construct();
-        h->n_elements++;
-    }
-
-    Node * node_it = h->buckets[key_val]->head;
-    int i = 0;
-
-    while(node_it!=NULL){
-
-        HashTableItem * item = node_it->value;
-
-        if(h->cmp_fn(item->key,key)==0){
-            val_destroy(item->val);
-            item->val=val;
-            i = 1;
-            break;
-        }
-
-        node_it = node_it->next;
-    }
-
-    if(i==0){
         HashTableItem * new = _hash_pair_construct(key,val);
         forward_list_push_front(h->buckets[key_val],new);
+        h->n_elements++;
+    }
+    else{
+        Node * node_it = h->buckets[key_val]->head;
+        int i = 0;
+
+        while(node_it!=NULL){
+
+            HashTableItem * item = node_it->value;
+
+            if(h->cmp_fn(item->key,key)==0){
+                if(val_destroy!=NULL){
+                    val_destroy(item->val);
+                }
+                if(key_destroy!=NULL){
+                   key_destroy(item->key);
+                }
+                item->key=key;
+                item->val=val;
+                i = 1;
+                break;
+            }
+
+            node_it = node_it->next;
+        }   
+
+        if(i==0){
+            HashTableItem * new = _hash_pair_construct(key,val);
+            forward_list_push_front(h->buckets[key_val],new);
+            h->n_elements++;
+        }
     }
 
 }
@@ -68,6 +78,7 @@ void hash_table_set(HashTable *h, void *key, void *val,void (*val_destroy)(void*
 ForwardList * hash_table_buckets(HashTable * h,int i){
     return h->buckets[i];
 }
+
 void * hash_table_get(HashTable *h, void *key){
     int key_val = h->hash_fn(h, key);
 
@@ -130,8 +141,44 @@ void hash_table_destroy(HashTable *h,void (*key_destroy)(void*),void (*val_destr
     free(h);
 }
 
+void hash_table_clear(HashTable * h){
+    for (int i = 0; i < h->table_size; i++)
+    {
+        if (h->buckets[i] != NULL)
+        {
+            Node *n = h->buckets[i]->head;
+
+            while (n != NULL)
+            {   
+                HashTableItem *pair = n->value;
+                _hash_pair_clear(pair);
+                n = n->next;
+            }
+
+            forward_list_clear(h->buckets[i]);
+        }
+    }
+    free(h->buckets);
+    free(h);
+}
+
 void _hash_pair_destroy(HashTableItem * item, void (*key_destroy)(void*),void (*val_destroy)(void*)){
-    key_destroy(item->key);
-    val_destroy(item->val);
+    if(key_destroy==NULL){
+
+    }
+    else{
+        key_destroy(item->key);
+    }
+    if(val_destroy==NULL){
+
+    }
+    else{
+        val_destroy(item->val);
+    }
+
+    free(item);
+}
+
+void _hash_pair_clear(HashTableItem * item){
     free(item);
 }

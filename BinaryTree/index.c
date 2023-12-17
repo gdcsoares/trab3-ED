@@ -79,9 +79,11 @@ BinaryTree * index_build(Vector* files, int(*cmp)(void*,void*),void (*val_destro
             char * word = vector_get(words,a);
             if(binary_tree_search(index,word,cmp)!=NULL){
                 BinaryTree * collection = (BinaryTree*)binary_tree_search(index,word,cmp); 
+
                 if(binary_tree_search(collection,file,cmp)!=NULL){ 
                     int * freq_pointer = (int*)binary_tree_search(collection,file,cmp);
                     *freq_pointer = *freq_pointer+1;
+
                 }
                 else{
                     int freq = 1;
@@ -89,8 +91,9 @@ BinaryTree * index_build(Vector* files, int(*cmp)(void*,void*),void (*val_destro
                     void *ponteiroVoid = malloc(sizeof(int));
                     memcpy(ponteiroVoid, &freq, sizeof(int));
 
-                    binary_tree_add(collection,file,ponteiroVoid,cmp,val_destroy,key_destroy);
+                    binary_tree_add(collection,strdup(file),ponteiroVoid,cmp,val_destroy,key_destroy);
                 }
+                free(word);
             }
 
             else{
@@ -100,13 +103,16 @@ BinaryTree * index_build(Vector* files, int(*cmp)(void*,void*),void (*val_destro
                 memcpy(ponteiroVoid, &freq, sizeof(int));
 
                 BinaryTree * collection = binary_tree_construct();
-                binary_tree_add(collection,file,ponteiroVoid,cmp,val_destroy,key_destroy);
+                binary_tree_add(collection,strdup(file),ponteiroVoid,cmp,val_destroy,key_destroy);
                 binary_tree_add(index,word,collection,cmp,bt_destroy,key_destroy);
             }
         }
         vector_destroy(words);
     }
 
+    for(int i = 0; i < vector_size(files); i++){
+        free(vector_get(files,i));
+    }
     vector_destroy(files);
 
     double end = get_timestamp(); 

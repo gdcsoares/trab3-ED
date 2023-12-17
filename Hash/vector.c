@@ -121,7 +121,7 @@ void vector_sort(Vector *v,int (*sort)(void*,void*)){
 
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - i - 1; j++) {
-            if (sort(v->data[j],v->data[j+1])>0) {
+            if (sort(v->data[j],v->data[j+1])<0) {
                 void * temp = v->data[j];
                 v->data[j] = v->data[j + 1];
                 v->data[j + 1] = temp;
